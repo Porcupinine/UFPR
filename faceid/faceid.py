@@ -9,6 +9,7 @@ import numpy as np
 import numpy.linalg as npla
 
 
+
 class FaceId:
     _path = ''  ## virutal path
     _exclude = ''
@@ -60,24 +61,24 @@ class FaceId:
         #		Arreio com as imagens
         aimages = np.asarray(self.images_train)
         aimages_test = np.asarray(self.images_test)
-        # print 'aimages_test shape: {0}'.format(aimages_test.shape)
+        #print 'aimages_test shape: {0}'.format(aimages_test.shape)
         #		transforma em um arreio com uma dimensao??? (o que faz ravel ??)
         aimages = np.reshape(np.ravel(aimages), (nimg, -1))
         aimages_test = np.reshape(np.ravel(aimages_test), (nimg_test, -1))
-        # print 'aimages_test shape: {0}'.format(aimages_test.shape)
+        #print 'aimages_test shape: {0}'.format(aimages_test.shape)
         #		calculaa media das imagens
         mimages = np.average(aimages, axis=0)
         #		arreio com a diferenca entre imagem e imagem media (ri nos slides)
         dimages = aimages - mimages
         dimages_test = aimages_test - mimages
         # print dimages_test
-        # print 'shape: {0}/{1}'.format(dimages_test.shape, dimages_test.dtype)
+        #print 'shape: {0}/{1}'.format(dimages_test.shape, dimages_test.dtype)
         #		matriz de covariancia
-        mcov = np.dot(dimages, dimages.T)
+        mcov = np.cov(dimages)
         #		auto-valor e auto-vetor da matriz de covariancia
         evals, evects = npla.eig(mcov)
         evects = np.real(evects)
-        #  evects = np.sort(evects)
+      #  evects = np.sort(evects)
         # print 'shape: {0}'.format(mcov.shape)
         # print 'shape: {0}'.format(evals.shape)
         # print 'shape: {0}'.format(evects.shape)
@@ -86,11 +87,11 @@ class FaceId:
         ims = None  # for exhibition
         #		realiza a operacao para 5 imagens
         for i in range(5):
-            # print 'shape: {0}'.format(aimages.shape)
-            # print 'shape: {0}/{1}'.format(evects.shape, evects.dtype)
+            #print 'shape: {0}'.format(aimages.shape)
+            #print 'shape: {0}/{1}'.format(evects.shape, evects.dtype)
             #			lista recebe a multiplicacao dos auto-vetores pela diferenca entre imagens e imagens medias
             eigenFace = np.dot(evects[i, :], dimages)
-            # print 'shape: {0}/{1}'.format(eigenFace.shape,eigenFace.dtype)
+            #print 'shape: {0}/{1}'.format(eigenFace.shape,eigenFace.dtype)
             #			troca o tamanho do arreio ???
             eigenFace = np.array(eigenFace, dtype=np.uint8).reshape(n1, n2)
             #			acrescenta na lista
@@ -103,65 +104,51 @@ class FaceId:
         # plt.pause(2)
         # plt.draw()
 
-        # print 'Eigen Faces pronto'
-        # dimages_test = np.array(dimages_test, dtype=np.uint8).reshape(n1, n2)
+        print 'Eigen Faces pronto'
+        #dimages_test = np.array(dimages_test, dtype=np.uint8).reshape(n1, n2)
 
         aeigenFaces = np.asarray(eigenFaces)
         nimg_eg = len(aeigenFaces)
         aeigenFaces = np.reshape(np.ravel(aeigenFaces), (nimg_eg, -1))
-        # aeigenFaces = aeigenFaces.T
+        #aeigenFaces = aeigenFaces.T
         dimages = dimages.T
         dimages_test = dimages_test.T
-        # aimages_test = aimages_test.T
+        #aimages_test = aimages_test.T
 
-        # print 'shape: {0}'.format(aeigenFaces.shape)
-        # print 'shape: {0}'.format(dimages_test.shape)
+        #print 'shape: {0}'.format(aeigenFaces.shape)
+        #print 'shape: {0}'.format(dimages_test.shape)
 
-        # distancias base de treino e test
+        #distancias base de treino e test
         pvec_train = np.dot(aeigenFaces, dimages)
         pvec_test = np.dot(aeigenFaces, dimages_test)
-        #print 'pvectrain'
-        #print pvec_train
-        #print 'pvectest'
-        #print pvec_test
 
-        #threshold = 0
-        #for i in pvec_train.T:
-         #   for j in pvec_train.T:
-          #      threshold = max(threshold, np.sqrt(np.sum(np.square(i - j))) / 2)
-        # print threshold
 
-        # classificacao
+        threshold = 0
+        for i in pvec_train.T:
+            for j in pvec_train.T:
+                threshold = max (threshold, np.sqrt(np.sum(np.square(i-j)))/2 )
+        #print threshold
+
+        #classificacao
         distvec = []
         classified = []
         for i in pvec_test.T:
             for j in pvec_train.T:
-                # dist = np.sqrt(np.sum(np.square(i-j)))
-                distvec.append(np.sqrt(np.sum(np.square(i - j))))
-                # dist = min (dist, np.sqrt(np.sum(np.square(i-j))))
-                # classified.append()
-                # print distvec.index(min(distvec))
+                #dist = np.sqrt(np.sum(np.square(i-j)))
+                distvec.append(np.sqrt(np.sum(np.square(i-j))))
+                #dist = min (dist, np.sqrt(np.sum(np.square(i-j))))
+                #classified.append()
             classe = (self.subjects_train[distvec.index(min(distvec))])
             distvec[:] = []
             classified.append(classe)
-        # classified.append(self.subjects_train.index(min(distvec)))
-        #print 'classified'
-        #print classified
+        #classified.append(self.subjects_train.index(min(distvec)))
 
-        #print 'subjects train'
-        #print self.subjects_test
-
-        accuracy = 0
+        acuracy = 0
         for i in range(len(classified)):
             if classified[i] == self.subjects_test[i]:
-                accuracy = accuracy +1
-
-        porcent = (accuracy * 100) / len(classified)
-        print accuracy
-        print porcent
-
-
-        # print classified
+                acuracy = acuracy +1
+        print acuracy
+        #print classified
         #		retorna lista com eigenfaces
         return eigenFaces
         # def fisherFaces(self):
@@ -171,26 +158,23 @@ class ORLFaces(FaceId):
     _path = './att_faces'
     _exclude = ''
 
-    def get_images_and_labels(self, path =_path, exclude =_exclude):
+    #	funcao para capturar as imagens e "etiquetas" por que "path = _path" ??
+    def get_images_and_labels(self, path=_path, exclude=_exclude):
 
-        #criacao de listas
         self.images_train = []
         self.subjects_train = []
         self.images_test = []
         self.subjects_test = []
 
-        #percorre as pastas d= subpasta
+        #		percorre as pastas
         subjects_paths = [os.path.join(path, d) for d in os.listdir(path) if os.path.isdir(os.path.join(path, d))]
 
-        #enumera as imagens da pasta (cada pasta tem um numero)
-        #for s, subject_paths in enumerate(subjects_paths, start=1):
-            #subject_path = [os.path.join(subject_paths, f) for f in os.listdir(subject_paths) if
-                            #f.endswith('.pgm') and os.path.isfile(os.path.join(subject_paths, f))]
-
-            #print '{0}'.format(subject_path)
-        for f in os.listdir(subject_paths):
-            print f
+        #		enumera as imagens da pasta (cada pasta tem um numero) o que eh o s ????
+        for s, subject_paths in enumerate(subjects_paths, start=1):
+            subject_path = [os.path.join(subject_paths, f) for f in os.listdir(subject_paths) if
+                            f.endswith('.pgm') and os.path.isfile(os.path.join(subject_paths, f))]
             if f.startswith(exclude):
+
                 for image_path in subject_path:
                     # print 'sub: {0}'.format(image_path)
                     # Read the image and convert to grayscale
@@ -202,7 +186,7 @@ class ORLFaces(FaceId):
 
                     self.images_test.append(image)
                     self.subjects_test.append(nbr)
-                    # print 'test done'
+                    #print 'test done'
             else:
 
                 for image_path in subject_path:
@@ -223,17 +207,22 @@ class ORLFaces(FaceId):
 # print 'sub: {0}({1}#) - {2}'.format(s,len(subject_path),subject_paths)
 
 
-
 class YaleFaces(FaceId):
-
     _path = './yalefaces'
     _exclude = ''
+    # classes: center-light, w/glasses, happy, left-light, w/no glasses, normal, right-light, sad, sleepy, surprised, and wink.
+    class_labels = ['.centerlight', '.glasses', '.happy', '.leftlight', '.noglasses', '.normal', '.rightlight', '.sad',
+                    '.sleepy', '.surprised', '.wink']
 
-     def get_images_and_labels(self, path=_path, exclude=_exclude):
+    # Note that the image "subject04.sad" has been corrupted and has been substituted by "subject04.normal".
+    # Note that the image "subject01.gif" corresponds to "subject01.centerlight" :~ mv subject01.gif subject01.centerlight
+
+
+    def get_images_and_labels(self, path=_path, exclude=_exclude):
         # Append all the absolute image paths in a list image_paths
         # We will not read the image with the .sad extension in the training set
         # Rather, we will use them to test our accuracy of the training
-        # print 'entrou'
+        #print 'entrou'
         # images_train will contains face images for training
         self.images_train = []
         # subjets_train will contains the subject identification number assigned to the image for training
@@ -247,12 +236,12 @@ class YaleFaces(FaceId):
         # classes_test for testing
         self.classes_test = []
 
-        # for c, class_label in enumerate(self.class_labels, start=1):
-        # image_paths = [os.path.join(path, f) for f in os.listdir(path) if f.endswith(class_label)]
+        #for c, class_label in enumerate(self.class_labels, start=1):
+            # image_paths = [os.path.join(path, f) for f in os.listdir(path) if f.endswith(class_label)]
 
-        #			separar arquivo com imagens selecionadas e arquivo com demais imagens
-        # print c
-        # print class_label
+            #			separar arquivo com imagens selecionadas e arquivo com demais imagens
+            # print c
+            # print class_label
 
         for f in os.listdir(path):
             # print f
@@ -272,7 +261,6 @@ class YaleFaces(FaceId):
                 self.subjects_test.append(nbr)
                 self.classes_test.append(exclude)
 
-
             # print 'test done'
             # print len(self.images_test)
 
@@ -284,34 +272,60 @@ class YaleFaces(FaceId):
                 image_pil = Image.open(image_paths).convert('L')
                 image = np.array(image_pil, 'uint8')
                 nbr = int(os.path.split(image_paths)[1].split(".")[0].replace("subject", ""))
-                class_label = '.' + f.split(".")[1]
+                class_label = '.' +  f.split(".")[1]
 
                 self.images_train.append(image)
                 self.subjects_train.append(nbr)
                 self.classes_train.append(class_label)
 
+        #	print 'class_label: {0}({1}#) - {2}'.format(c,len(image_paths), class_label)
 
-                #	print 'class_label: {0}({1}#) - {2}'.format(c,len(image_paths), class_label)
+
+## Path to the Yale Dataset
+# path = '/home/menotti/databases/yalefaces/'
+# print 'loading Yalefaces database'
+# yale = YaleFaces(path)
+
+# path = '/home/menotti/databases/orl_faces/'
+# print 'loading ORL database'
+# orl = ORL(path)
+
+#		ims = None # for exhibition
+#			if ims is None:
+#				ims = plt.imshow(im, cmap='Greys_r')
+#			else:
+#				ims.set_data(im)
+#			plt.pause(.01)
+#			plt.draw()
+
+
+# path = '/home/prof/menotti/databases/yalefaces/'
+# print 'loading Yalefaces database'
+# yale = YaleFaces(path)
+# yale.eigenFaces2()
 
 path = './att_faces'
-#print 'loading ORL database'
-class_labels = ['1','2','3','4','5','6','7','8','9','10']
-for y in range(len(class_labels)):
-    orl = ORLFaces(path, y)
-    orl.eigenFaces2()
+print 'loading ORL database'
+# class_labels = ['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20','21','22','23','24','25','26','27','28','29','30','31','32','33','34','35','36','37','38','39','40']
+# for y in range(len(class_labels)):
+#	orl = ORLFaces(path, y)
+#	orl.eigenFaces2()
 
 path = './yalefaces'
 class_labels = ['.centerlight', '.glasses', '.happy', '.leftlight', '.noglasses', '.normal', '.rightlight', '.sad',
                 '.sleepy', '.surprised', '.wink']
-#for x in class_labels:
- #   yale = YaleFaces(path, x)
-  #  print x
+for x in class_labels:
+    yale = YaleFaces(path, x)
+    yale.eigenFaces2()
 
-    # print 'subjects_train'
-    # print len(yale.subjects_train)
-    # print yale.subjects_train
-    # print 'subjects_test'
-    # print len(yale.subjects_test)
-    # print yale.subjects_test
 
-  #  yale.eigenFaces2()
+
+
+
+
+
+
+
+
+
+
