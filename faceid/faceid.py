@@ -167,41 +167,48 @@ class ORLFaces(FaceId):
         self.subjects_test = []
 
         #		percorre as pastas
-        subjects_paths = [os.path.join(path, d) for d in os.listdir(path) if os.path.isdir(os.path.join(path, d))]
-
+        subject_paths = [os.path.join(path, d) for d in os.listdir(path) if os.path.isdir(os.path.join(path, d))]
+        print subject_paths
+        print path
+        print d
         #		enumera as imagens da pasta (cada pasta tem um numero) o que eh o s ????
-        for s, subject_paths in enumerate(subjects_paths, start=1):
-            subject_path = [os.path.join(subject_paths, f) for f in os.listdir(subject_paths) if
-                            f.endswith('.pgm') and os.path.isfile(os.path.join(subject_paths, f))]
-            if f.startswith(exclude):
+        #for s, subject_paths in enumerate(subjects_paths, start=1):
+        subject_path = [os.path.join(d, f) for f in os.listdir(d)]
+        #print subject_path
+        for f in os.listdir(subject_paths):
+            if f.endswith('.pgm') and os.path.isfile(os.path.join(subject_paths, f)):
 
-                for image_path in subject_path:
-                    # print 'sub: {0}'.format(image_path)
-                    # Read the image and convert to grayscale
-                    image_pil = Image.open(image_path).convert('L')
-                    # Convert the image format into numpy array
-                    image = np.array(image_pil, 'uint8')
-                    # Get the label of the image
-                    nbr = int(os.path.split(subject_path)[1].split(".")[0])
+                if f.startswith(exclude):
 
-                    self.images_test.append(image)
-                    self.subjects_test.append(nbr)
-                    #print 'test done'
-            else:
+                    for image_path in subject_path:
+                        image_paths = os.path.join(path, f)
+                        # print 'sub: {0}'.format(image_path)
+                        # Read the image and convert to grayscale
+                        image_pil = Image.open(image_path).convert('L')
+                        # Convert the image format into numpy array
+                        image = np.array(image_pil, 'uint8')
+                        # Get the label of the image
+                        nbr = int(os.path.split(image_paths)[1].split(".")[0])
 
-                for image_path in subject_path:
-                    # print 'sub: {0}'.format(image_path)
-                    # Read the image and convert to grayscale
-                    image_pil = Image.open(image_path).convert('L')
-                    # Convert the image format into numpy array
-                    image = np.array(image_pil, 'uint8')
-                    # Get the label of the image
-                    nbr = int(os.path.split(subject_path)[1].split(".")[0])
+                        self.images_test.append(image)
+                        self.subjects_test.append(nbr)
+                        #print 'test done'
+                else:
 
-                    self.images_train.append(image)
-                    self.subjects_train.append(nbr)
-                    # print 'train done'
-                    # print self.images_train[0]
+                    for image_path in subject_path:
+                        # print 'sub: {0}'.format(image_path)
+                        image_paths = os.path.join(path, f)
+                        # Read the image and convert to grayscale
+                        image_pil = Image.open(image_path).convert('L')
+                        # Convert the image format into numpy array
+                        image = np.array(image_pil, 'uint8')
+                        # Get the label of the image
+                        nbr = int(os.path.split(image_paths)[1].split(".")[0])
+
+                        self.images_train.append(image)
+                        self.subjects_train.append(nbr)
+                        # print 'train done'
+                        # print self.images_train[0]
 
 
 # print 'sub: {0}({1}#) - {2}'.format(s,len(subject_path),subject_paths)
@@ -306,17 +313,17 @@ class YaleFaces(FaceId):
 
 path = './att_faces'
 print 'loading ORL database'
-# class_labels = ['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20','21','22','23','24','25','26','27','28','29','30','31','32','33','34','35','36','37','38','39','40']
-# for y in range(len(class_labels)):
-#	orl = ORLFaces(path, y)
-#	orl.eigenFaces2()
+class_labels = ['1','2','3','4','5','6','7','8','9','10']
+for y in class_labels:
+	orl = ORLFaces(path, y)
+	orl.eigenFaces2()
 
 path = './yalefaces'
 class_labels = ['.centerlight', '.glasses', '.happy', '.leftlight', '.noglasses', '.normal', '.rightlight', '.sad',
                 '.sleepy', '.surprised', '.wink']
-for x in class_labels:
-    yale = YaleFaces(path, x)
-    yale.eigenFaces2()
+#for x in class_labels:
+#    yale = YaleFaces(path, x)
+#    yale.eigenFaces2()
 
 
 
