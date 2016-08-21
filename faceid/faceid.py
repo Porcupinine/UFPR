@@ -168,42 +168,34 @@ class ORLFaces(FaceId):
 
         #		percorre as pastas
         subject_paths = [os.path.join(path, d) for d in os.listdir(path) if os.path.isdir(os.path.join(path, d))]
-        print subject_paths
-        print path
-        print d
         #		enumera as imagens da pasta (cada pasta tem um numero) o que eh o s ????
         #for s, subject_paths in enumerate(subjects_paths, start=1):
-        subject_path = [os.path.join(d, f) for f in os.listdir(d)]
+        for d in subject_paths:
         #print subject_path
-        for f in os.listdir(subject_paths):
-            if f.endswith('.pgm') and os.path.isfile(os.path.join(subject_paths, f)):
-
-                if f.startswith(exclude):
-
-                    for image_path in subject_path:
-                        image_paths = os.path.join(path, f)
+            for f in os.listdir(d):
+                if f.endswith('.pgm') and os.path.isfile(os.path.join(d, f)):
+                    if f.split(".")[0] == exclude:
+                        image_path = os.path.join(d, f)
                         # print 'sub: {0}'.format(image_path)
                         # Read the image and convert to grayscale
                         image_pil = Image.open(image_path).convert('L')
                         # Convert the image format into numpy array
                         image = np.array(image_pil, 'uint8')
                         # Get the label of the image
-                        nbr = int(os.path.split(image_paths)[1].split(".")[0])
+                        nbr = int(os.path.split(d)[1].replace("s", ""))
 
                         self.images_test.append(image)
                         self.subjects_test.append(nbr)
                         #print 'test done'
-                else:
-
-                    for image_path in subject_path:
+                    else:
                         # print 'sub: {0}'.format(image_path)
-                        image_paths = os.path.join(path, f)
+                        image_path = os.path.join(d, f)
                         # Read the image and convert to grayscale
                         image_pil = Image.open(image_path).convert('L')
                         # Convert the image format into numpy array
                         image = np.array(image_pil, 'uint8')
                         # Get the label of the image
-                        nbr = int(os.path.split(image_paths)[1].split(".")[0])
+                        nbr = int(os.path.split(d)[1].replace("s", ""))
 
                         self.images_train.append(image)
                         self.subjects_train.append(nbr)
